@@ -4,14 +4,16 @@ The configuration files in this repository include comments to assist with setup
 
 Enjoy your secure, containerized desktop environment!
 
+![Demo](./image/preview.gif)
+
 ## Setup
 1. Clone this repository and navigate to the project directory.
-2. Update the `docker-compose.yml` file with your VPN credentials and any other desired configuration changes (see comments in the file for details).
-3. Run `./setup.sh` to create the necessary directories for persistent data.
+2. Update the [docker-compose.yml](./docker-compose.yml) file with your VPN credentials and any other desired configuration changes (see comments in the file for details).
+3. Run [setup.sh](./setup.sh) to create the necessary directories for persistent data.
     * You may need to give the script execute permissions with `chmod +x setup.sh` if you haven't already.
 4. Start the containers with `docker-compose up -d`.
     * I recommend removing the `-d` flag for the first run so you can see the logs and ensure everything is working correctly. Once you're confident it's working, you can add the `-d` flag to run in detached mode. You can also detach by hitting the `d` key (in newer versions of Docker Compose at least).
-5. Access the Webtop desktop environment by navigating to `https://<hostname/ip>:3001`
+5. Access the Webtop desktop environment by navigating to `https://<hostname/ip>:3001`.
 
 ## Notes
 * There were some additional configuration I needed to apply in order to get everything working including launching Chromium inside of the desktop environment (the default web browser in the Webtop image).
