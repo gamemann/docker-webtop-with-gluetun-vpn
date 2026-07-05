@@ -1,0 +1,5 @@
+.env
+.env.gluetun
+.env.desktop
+/gluetun
+/config

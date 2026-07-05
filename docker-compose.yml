@@ -1,6 +1,6 @@
 services:
   gluetun:
-    image: qmcgaw/gluetun
+    image: qmcgaw/gluetun:${IMG_GLUETUN_TAG}
     container_name: gluetun
     cap_add:
       - NET_ADMIN
@@ -11,36 +11,23 @@ services:
       # Using `0.0.0.0`, we bind this to all interfaces on the host machine.
       # This allows you to access the webtop from other devices on your local network by using the host machine's IP address.
       # However, this may be too insecure. If you only want to access the webtop from the host machine ONLY, remove the `0.0.0.0:` and just use `3000:3000` and `3001:3001` to bind to localhost only.
-      - 0.0.0.0:3000:3000
-      - 0.0.0.0:3001:3001
+      - ${GLUETUN_BIND_ADDR}:${DESKTOP_HTTP_PORT}:3000
+      - ${GLUETUN_BIND_ADDR}:${DESKTOP_HTTPS_PORT}:3001
     volumes:
       - ./gluetun:/gluetun
-    environment:
-      # I use OpenVPN with NordVPN, but you should be able to use WireGuard and others as well.
-      - VPN_SERVICE_PROVIDER=nordvpn
-      - VPN_TYPE=openvpn
-
-      # If you're running NordVPN, you'll want to user your "service credentials" for the following two variables.
-      - OPENVPN_USER=NORDVPN_SERVICE_USER
-      - OPENVPN_PASSWORD=NORDVPN_SERVICE_PASSWORD
-
-      # The country code(s) to connect to. You can specify multiple countries by separating them with commas, e.g. "United States,Canada,United Kingdom".
-      # See: https://github.com/qdm12/gluetun-wiki/blob/main/setup/servers.md#list-of-vpn-servers
-      - SERVER_COUNTRIES=United States
-
-      # Allow local network access (adjust as needed).
-      # You may also use commas to separate multiple subnets, e.g. "192.168.1.0/24,192.168.2.0/24"
-      - FIREWALL_OUTBOUND_SUBNETS=192.168.1.0/24
-
-      # I was experimenting with potential MTU issues, but this didn't seem to help. Leaving here just in case others have issues and want to try uncommenting it.
-      #- OPENVPN_MSSFIX=1200
-    # Disable IPv6 (seem bottom).
+    env_file:
+      - .env.gluetun
+    # Disable IPv6 (see bottom).
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=1
     restart: unless-stopped
-  ubuntu-desktop:
-    build: .
-    container_name: ubuntu_desktop
+  desktop:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        IMG_DESKTOP_TAG: ${IMG_DESKTOP_TAG}
+    container_name: desktop
     network_mode: "service:gluetun"
     # Only boot the desktop container after the VPN is up and healthy to ensure it has a secure connection before starting any applications.
     depends_on:
@@ -52,19 +39,8 @@ services:
       - apparmor:unconfined
     cap_add:
       - SYS_ADMIN
-    environment:
-      - PUID=1000 # Change to your user ID if needed (1000 = typically the first user on a Linux system)
-      - PGID=1000 # Change to your group ID if needed (1000 = typically the first group on a Linux system)
-      - TZ=America/New_York  # Change to your timezone if needed
-      - TITLE=Ubuntu Desktop
-
-      # These are HTTP credentials required before accessing the webtop browser page. Change them to something secure!
-      # You may also remove them to disable authentication, but I don't recommend that if you're exposing the webtop to a network you don't fully trust.
-      - CUSTOM_USER=user # Change to your desired username
-      - PASSWORD=password # Change to your desired password
-
-      # See: https://github.com/linuxserver/docker-webtop/tree/e029300542b2c668abff2fca909487a5ca2885c0#options-in-all-selkies-based-gui-containers
-      # For more info!
+    env_file:
+      - .env.desktop
     volumes:
       - ./config:/config     # Persist user data and settings including home directory, application data (e.g. web browser sessions/cookies), and desktop configuration.
     shm_size: "1gb"          # Give it enough shared memory for applications like Chromium to run smoothly.

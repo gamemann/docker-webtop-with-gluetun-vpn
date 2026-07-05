@@ -1,7 +1,9 @@
+ARG IMG_DESKTOP_TAG="ubuntu-xfce"
+
 # I used the Ubuntu XFCE image.
 # If you decide to use a new image, ensure the install commands below are compatible with the base image you choose. For example, if you switch to a Debian-based image, you may need to change apt commands to apt-get or adjust package names.
 # A full list of supported images: https://docs.linuxserver.io/images/docker-webtop/#supported-architectures
-FROM lscr.io/linuxserver/webtop:ubuntu-xfce
+FROM lscr.io/linuxserver/webtop:${IMG_DESKTOP_TAG}
 
 # Set environment variable to noninteractive to avoid prompts during package installation.
 ENV DEBIAN_FRONTEND=noninteractive
